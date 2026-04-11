@@ -16,34 +16,42 @@ jobs:
         uses: actions/checkout@v4
 
       - name: check structure
-        run: ls -R
+        run: |
+          echo "current folder:"
+          ls -F
+          echo "Android folders"
+          ls -F android || echo "not found"
 
-      - name: set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      - name: find n build
+      - name: install gradle
         run: |
-          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
-          
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "No such file"
+          sudo apt-get update
+          sudo apt-get install -y gradle
+
+      - name: build
+        run: |
+          BUILD_FILE_PATH=$(find . -name "build.gradle*" | head -n 1)
+          if [ -z "$BUILD_FILE_PATH" ]; then
+            echo "no such file"
             exit 1
           fi
           
-          DIR=$(dirname "$GRADLEW_PATH")
-          echo "file at: $DIR"
+          DIR=$(dirname "$BUILD_FILE_PATH")
+          if [[ "$DIR" == */app ]]; then
+            DIR=$(dirname "$DIR")
+          fi
           
-          chmod +x "$GRADLEW_PATH"
+          echo "will run build at: $DIR"
           cd "$DIR"
-          ./gradlew assembleDebug
+          gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GDVN-App-Debug
           path: "**/build/outputs/apk/debug/*.apk"
-          
