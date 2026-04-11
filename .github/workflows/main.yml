@@ -15,43 +15,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: check structure
-        run: |
-          echo "current folder:"
-          ls -F
-          echo "Android folders"
-          ls -F android || echo "not found"
-
-      - name: Setup Java
+      - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
-      - name: install gradle
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: build
+      - name: Build with Gradle
         run: |
-          BUILD_FILE_PATH=$(find . -name "build.gradle*" | head -n 1)
-          if [ -z "$BUILD_FILE_PATH" ]; then
-            echo "no such file"
-            exit 1
+          if [ -d "android" ]; then
+            cd android
           fi
           
-          DIR=$(dirname "$BUILD_FILE_PATH")
-          if [[ "$DIR" == */app ]]; then
-            DIR=$(dirname "$DIR")
-          fi
-          
-          echo "will run build at: $DIR"
-          cd "$DIR"
-          gradle assembleDebug --stacktrace
+          gradle wrapper
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GDVN-App-Debug
           path: "**/build/outputs/apk/debug/*.apk"
+          
