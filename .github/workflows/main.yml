@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,16 +23,19 @@ jobs:
           cache: gradle
 
       - name: Grant execute permission for gradlew
-        run: chmod +x android/gradlew
+
+        run: find . -name "gradlew" -exec chmod +x {} +
 
       - name: Build with Gradle
         run: |
-          cd android
+          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
+          GRADLE_DIR=$(dirname "$GRADLEW_PATH")
+          cd "$GRADLE_DIR"
           ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: DemonList-Android-Debug
-          path: android/app/build/outputs/apk/debug/*.apk
-          
+          name: GDVN-App-Debug
+
+          path: "**/build/outputs/apk/debug/*.apk"
