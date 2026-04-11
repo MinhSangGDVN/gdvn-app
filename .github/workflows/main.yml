@@ -23,19 +23,14 @@ jobs:
           cache: gradle
 
       - name: Grant execute permission for gradlew
-
-        run: find . -name "gradlew" -exec chmod +x {} +
+        run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: |
-          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
-          GRADLE_DIR=$(dirname "$GRADLEW_PATH")
-          cd "$GRADLE_DIR"
-          ./gradlew assembleDebug
+        run: ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GDVN-App-Debug
-
-          path: "**/build/outputs/apk/debug/*.apk"
+          path: app/build/outputs/apk/debug/*.apk
+          
