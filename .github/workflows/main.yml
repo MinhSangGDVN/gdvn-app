@@ -15,29 +15,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
 
-      - name: Build with Gradle
+      - name: Get dependencies
         run: |
-          if [ -d "android" ]; then
-            cd android
-          fi
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
-          gradle wrapper
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          flutter pub get
+
+      - name: Build APK
+        run: |
+          flutter build apk --debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: GDVN-App-Debug
-          path: "**/build/outputs/apk/debug/*.apk"
+          path: "build/app/outputs/flutter-apk/*.apk"
           
